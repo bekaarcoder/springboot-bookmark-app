@@ -120,7 +120,7 @@
                 <version>3.3.0</version>
                 <configuration>
                     <from>
-                        <image>eclipse:temurin:17-jdk</image>
+                        <image>eclipse-temurin:17-jdk</image>
                     </from>
                     <to>
                         <image>blitzstriker/bookmark-api</image>
