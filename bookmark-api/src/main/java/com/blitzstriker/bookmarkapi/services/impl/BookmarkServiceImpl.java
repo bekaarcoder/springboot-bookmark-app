@@ -3,6 +3,7 @@ package com.blitzstriker.bookmarkapi.services.impl;
 import com.blitzstriker.bookmarkapi.entity.Bookmark;
 import com.blitzstriker.bookmarkapi.payload.BookmarkDTO;
 import com.blitzstriker.bookmarkapi.payload.BookmarksDTO;
+import com.blitzstriker.bookmarkapi.payload.CreateBookmarkRequest;
 import com.blitzstriker.bookmarkapi.repositories.BookmarkRespository;
 import com.blitzstriker.bookmarkapi.services.BookmarkService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -28,14 +30,28 @@ public class BookmarkServiceImpl implements BookmarkService {
     @Transactional(readOnly = true)
     public BookmarksDTO getBookmarks(Integer page) {
         int pageNo = page < 1 ? 0 : page - 1;
-        Pageable pageable = PageRequest.of(pageNo, 2, Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(pageNo, 5, Sort.Direction.DESC, "createdAt");
         Page<BookmarkDTO> bookmarkPage = bookmarkRespository.findAll(pageable).map(bookmark -> modelMapper.map(bookmark, BookmarkDTO.class));
         return new BookmarksDTO(bookmarkPage);
     }
 
     @Override
-    public Bookmark createBookmark(Bookmark bookmark) {
-        return null;
+    @Transactional(readOnly = true)
+    public BookmarksDTO searchBookmarks(String query, Integer page) {
+        int pageNo = page < 1 ? 0 : page - 1;
+        Pageable pageable = PageRequest.of(pageNo, 5, Sort.Direction.DESC, "createdAt");
+        Page<BookmarkDTO> bookmarkPage = bookmarkRespository.findByTitleContainingIgnoreCase(query, pageable).map(bookmark -> modelMapper.map(bookmark, BookmarkDTO.class));
+        return new BookmarksDTO(bookmarkPage);
+    }
+
+    @Override
+    public BookmarkDTO createBookmark(CreateBookmarkRequest request) {
+        Bookmark bookmark = new Bookmark();
+        bookmark.setTitle(request.getTitle());
+        bookmark.setUrl(request.getUrl());
+        bookmark.setCreatedAt(Instant.now());
+        Bookmark savedBookmark = bookmarkRespository.save(bookmark);
+        return modelMapper.map(savedBookmark, BookmarkDTO.class);
     }
 
     @Override
